@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)file:///Users/henrikherb/Downloads/ohm-scheduler_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ohm Scheduling Planner</title>
+<script>
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyBzplxkrgzXvE6f2-xpklBF5t_dvUfYjQQ",
+    authDomain:        "ohm-scheduler.firebaseapp.com",
+    databaseURL:       "https://ohm-scheduler-default-rtdb.firebaseio.com",
+    projectId:         "ohm-scheduler",
+    storageBucket:     "ohm-scheduler.firebasestorage.app",
+    messagingSenderId: "776427651681",
+    appId:             "1:776427651681:web:847e2e69d9764c4b8c2020"
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./Ohm Scheduling Planner GitHub_files/css2" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --white:    #FFFFFF;
+  --gray-50:  #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+  --blue:     #2563EB;
+  --blue-lt:  #3B82F6;
+  --blue-bg:  #EFF6FF;
+
+  /* user colors — vivid but accessible */
+  --c0: #16A34A; --c0-bg: #DCFCE7; /* green */
+  --c1: #2563EB; --c1-bg: #DBEAFE; /* blue */
+  --c2: #D97706; --c2-bg: #FEF3C7; /* amber */
+  --c3: #DC2626; --c3-bg: #FEE2E2; /* red */
+  --c4: #7C3AED; --c4-bg: #EDE9FE; /* violet */
+
+  --font: 'Inter', system-ui, sans-serif;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--gray-50);
+  color: var(--gray-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Loading overlay ── */
+#overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,0.95);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; z-index: 1000;
+}
+#overlay.hidden { display: none; }
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.overlay-msg { font-size: 14px; color: var(--gray-500); font-weight: 500; }
+
+/* ── App shell ── */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Login screen ── */
+#login-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh; padding: 24px;
+  gap: 0;
+}
+.login-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%; max-width: 420px;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+.login-logo {
+  font-size: 28px; font-weight: 700;
+  color: var(--gray-900); letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.login-logo span { color: var(--blue); }
+.login-subtitle {
+  font-size: 14px; color: var(--gray-500);
+  margin-bottom: 32px;
+}
+.login-label {
+  display: block; text-align: left;
+  font-size: 13px; font-weight: 600;
+  color: var(--gray-700); margin-bottom: 8px;
+}
+.login-input-row { display: flex; gap: 10px; }
+.login-input {
+  flex: 1;
+  height: 44px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius);
+  padding: 0 14px;
+  font-size: 15px; font-family: var(--font);
+  color: var(--gray-900);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.login-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+.login-btn {
+  height: 44px;
+  padding: 0 22px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px; font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.login-btn:hover { background: var(--blue-lt); }
+.login-btn:active { transform: scale(0.97); }
+.login-error {
+  margin-top: 10px;
+  font-size: 13px; color: #DC2626;
+  text-align: left; min-height: 18px;
+}
+.who-joined {
+  margin-top: 28px;
+  border-top: 1px solid var(--gray-100);
+  padding-top: 20px;
+}
+.who-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--gray-400); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 12px;
+}
+.who-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.who-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 13px; font-weight: 500;
+}
+.who-dot { width: 8px; height: 8px; border-radius: 50%; }
+.spots-left {
+  font-size: 13px; color: var(--gray-400);
+  margin-top: 10px;
+}
+
+/* ── Main scheduler ── */
+#scheduler { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Top bar ── */
+#topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 24px;
+  height: 60px;
+  display: flex; align-items: center; gap: 16px;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: var(--shadow);
+}
+.topbar-logo {
+  font-size: 18px; font-weight: 700;
+  color: var(--gray-900); letter-spacing: -0.3px;
+  flex-shrink: 0;
+}
+.topbar-logo span { color: var(--blue); }
+#topbar-presence {
+  display: flex; gap: 6px; align-items: center;
+  flex-wrap: wrap; flex: 1;
+}
+.tp-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px; font-weight: 500;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+}
+.tp-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.tp-count {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 2px;
+}
+.topbar-right {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.user-badge {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 600;
+  color: var(--gray-700);
+}
+.user-badge-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+}
+.btn-ghost {
+  height: 32px; padding: 0 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 12px; font-weight: 500;
+  color: var(--gray-600);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { border-color: var(--gray-400); color: var(--gray-800); background: var(--gray-50); }
+.btn-danger {
+  height: 32px; padding: 0 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 12px; font-weight: 500;
+  color: var(--gray-500);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-danger:hover { border-color: #DC2626; color: #DC2626; background: #FFF5F5; }
+
+/* ── Instruction bar ── */
+#instruction-bar {
+  background: var(--blue-bg);
+  border-bottom: 1px solid #BFDBFE;
+  padding: 10px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.instr-text {
+  font-size: 13px; font-weight: 500; color: #1D4ED8;
+  display: flex; align-items: center; gap: 7px;
+}
+.instr-icon { font-size: 15px; }
+#legend-items { display: flex; gap: 10px; flex-wrap: wrap; }
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 500; color: var(--gray-600);
+}
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── Status pill ── */
+#status-pill {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.04em;
+  display: inline-flex; align-items: center; gap: 5px;
+  flex-shrink: 0;
+}
+#status-pill.live { background: #DCFCE7; color: #15803D; }
+#status-pill.connecting { background: var(--gray-100); color: var(--gray-500); }
+#status-pill.error { background: #FEE2E2; color: #DC2626; }
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+#status-pill.live .status-dot { animation: pulse 2s infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Grid ── */
+#grid-wrap { overflow-x: auto; flex: 1; padding-bottom: 48px; }
+#grid {
+  display: grid;
+  grid-template-columns: 70px repeat(7, minmax(90px, 1fr));
+  min-width: 700px;
+  border-top: 1px solid var(--gray-200);
+}
+
+/* Day headers */
+.corner { background: var(--gray-50); border-bottom: 2px solid var(--gray-200); }
+.day-hdr {
+  padding: 10px 6px 8px;
+  text-align: center;
+  border-left: 1px solid var(--gray-200);
+  border-bottom: 2px solid var(--gray-200);
+  background: var(--gray-50);
+  position: sticky; top: 60px; z-index: 10;
+}
+.day-short {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--gray-700);
+}
+.day-long {
+  font-size: 11px; color: var(--gray-400);
+  margin-top: 2px; font-weight: 400;
+}
+
+/* Time labels */
+.time-lbl {
+  display: flex; align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4px 10px 0 0;
+  height: 34px;
+  font-size: 11px; font-weight: 500;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-right: 1px solid var(--gray-200);
+  white-space: nowrap;
+  user-select: none;
+}
+.time-lbl.hour { border-bottom: 1px solid var(--gray-200); color: var(--gray-600); font-weight: 600; }
+.time-lbl.half { border-bottom: 1px solid var(--gray-100); color: var(--gray-400); font-size: 10px; }
+
+/* Slots */
+.slot {
+  height: 34px;
+  position: relative; overflow: visible;
+  border-left: 1px solid var(--gray-100);
+  background: var(--white);
+  cursor: pointer;
+  transition: background 0.07s;
+}
+.slot.hour { border-bottom: 1px solid var(--gray-200); }
+.slot.half { border-bottom: 1px solid var(--gray-100); }
+.slot:hover { background: #EFF6FF; }
+.slot.mine-selected { background: var(--blue-bg); }
+
+.slot-fill {
+  position: absolute; top: 0; height: 100%;
+  pointer-events: none;
+  border-top: 3px solid transparent;
+}
+
+.slot-dots {
+  position: absolute; bottom: 3px; right: 3px;
+  display: flex; gap: 2px; pointer-events: none; z-index: 2;
+}
+.slot-dot-small { width: 5px; height: 5px; border-radius: 50%; }
+
+/* Tooltip */
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-900);
+  color: white;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 12px; font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 500;
+  box-shadow: var(--shadow-md);
+}
+.tooltip::after {
+  content: '';
+  position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--gray-900);
+}
+.tooltip-time { color: #93C5FD; font-size: 11px; margin-bottom: 4px; }
+.tooltip-user { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+.tooltip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.tooltip-empty { color: var(--gray-400); font-size: 11px; }
+.slot:hover .tooltip { display: block; }
+
+/* ── Overlap summary ── */
+#summary { padding: 0 24px 48px; }
+#summary-inner {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 900px;
+  box-shadow: var(--shadow);
+}
+#summary-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--gray-700); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+#summary-title::before {
+  content: '✓';
+  width: 20px; height: 20px;
+  background: #DCFCE7; color: #16A34A;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
+#summary-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sum-chip {
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 13px; font-weight: 500;
+  border: 1.5px solid var(--gray-200);
+  background: var(--gray-50);
+  color: var(--gray-500);
+}
+.sum-chip.has-overlap {
+  background: #DCFCE7;
+  border-color: #86EFAC;
+  color: #15803D;
+}
+.sum-chip .day { font-weight: 700; margin-right: 6px; }
+.sum-chip .times { font-size: 12px; }
+
+/* ── Empty state hint ── */
+#empty-hint {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--gray-400);
+  font-size: 14px;
+}
+#empty-hint .big { font-size: 32px; margin-bottom: 12px; }
+#empty-hint p { max-width: 300px; margin: 0 auto; line-height: 1.6; }
+
+/* ── Fade in ── */
+@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.fadein { animation: fadein 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="overlay" class="hidden">
+  <div class="spinner"></div>
+  <div class="overlay-msg">Connecting…</div>
+</div>
+
+<!-- Login screen -->
+<div id="login-screen" class="fadein">
+  <div class="login-card">
+    <div class="login-logo">Ohm <span>Scheduler</span></div>
+    <div class="login-subtitle">Group availability planner · PST 7 AM – 8 PM</div>
+
+    <label class="login-label" for="name-input">Your name</label>
+    <div class="login-input-row">
+      <input id="name-input" class="login-input" type="text" placeholder="Enter your name…" maxlength="20" autocomplete="off">
+      <button id="login-btn" class="login-btn">Join</button>
+    </div>
+    <div id="login-error" class="login-error"></div>
+
+    <div class="who-joined" id="who-joined" style="display: block;">
+      <div class="who-label">Already joined — tap your name to sign in</div>
+      <div class="who-chips" id="who-chips"><div class="who-chip" title="Click to join as Ham" style="background: rgb(254, 243, 199); color: rgb(217, 119, 6); cursor: pointer; outline: transparent solid 1.5px; transition: transform 0.1s, outline-color 0.15s;"><span class="who-dot" style="background:#D97706"></span>Ham</div><div class="who-chip" title="Click to join as Herb" style="background: rgb(220, 252, 231); color: rgb(22, 163, 74); cursor: pointer; outline: transparent solid 1.5px; transition: transform 0.1s, outline-color 0.15s;"><span class="who-dot" style="background:#16A34A"></span>Herb</div><div class="who-chip" title="Click to join as Kat Thongnoppakun" style="background: rgb(219, 234, 254); color: rgb(37, 99, 235); cursor: pointer; outline: transparent solid 1.5px; transition: transform 0.1s, outline-color 0.15s;"><span class="who-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="who-chip" title="Click to join as Michael Lim muddafuk" style="background: rgb(254, 226, 226); color: rgb(220, 38, 38); cursor: pointer; outline: transparent solid 1.5px; transition: transform 0.1s, outline-color 0.15s;"><span class="who-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div><div class="who-chip" title="Click to join as Salvador Espinoza" style="background: rgb(237, 233, 254); color: rgb(124, 58, 237); cursor: pointer; outline: transparent solid 1.5px; transition: transform 0.1s, outline-color 0.15s;"><span class="who-dot" style="background:#7C3AED"></span>Salvador Espinoza</div></div>
+    </div>
+    <div class="spots-left" id="spots-left">Planner is full</div>
+  </div>
+</div>
+
+<!-- Main scheduler -->
+<div id="scheduler" style="display:none">
+
+  <!-- Top bar -->
+  <div id="topbar">
+    <div class="topbar-logo">Ohm <span>Scheduler</span></div>
+    <div id="topbar-presence"></div>
+    <div class="topbar-right">
+      <div id="status-pill" class="live">
+        <span class="status-dot"></span>
+        <span id="status-text">Live</span>
+      </div>
+      <div class="user-badge">
+        <span class="user-badge-dot" id="user-badge-dot"></span>
+        <span id="user-badge-name"></span>
+      </div>
+      <button class="btn-danger" id="clear-btn">Clear my slots</button>
+      <button class="btn-ghost" id="logout-btn">Switch user</button>
+    </div>
+  </div>
+
+  <!-- Instruction bar -->
+  <div id="instruction-bar">
+    <div class="instr-text">
+      <span class="instr-icon">👆</span>
+      Click or drag to mark times you're available
+    </div>
+    <div id="legend-items"><div class="legend-item"><span class="legend-dot" style="background:#D97706"></span>Ham</div><div class="legend-item"><span class="legend-dot" style="background:#16A34A"></span>Herb</div><div class="legend-item"><span class="legend-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="legend-item"><span class="legend-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div><div class="legend-item"><span class="legend-dot" style="background:#7C3AED"></span>Salvador Espinoza</div></div>
+    <div id="status-pill-mobile"></div>
+  </div>
+
+  <!-- Grid -->
+  <div id="grid-wrap">
+    <div id="grid"><div class="corner"></div><div class="day-hdr"><div class="day-short">Mon</div><div class="day-long">Monday</div></div><div class="day-hdr"><div class="day-short">Tue</div><div class="day-long">Tuesday</div></div><div class="day-hdr"><div class="day-short">Wed</div><div class="day-long">Wednesday</div></div><div class="day-hdr"><div class="day-short">Thu</div><div class="day-long">Thursday</div></div><div class="day-hdr"><div class="day-short">Fri</div><div class="day-long">Friday</div></div><div class="day-hdr"><div class="day-short">Sat</div><div class="day-long">Saturday</div></div><div class="day-hdr"><div class="day-short">Sun</div><div class="day-long">Sunday</div></div><div class="time-lbl hour">7:00 AM</div><div class="slot hour" data-di="0" data-si="0"><div class="tooltip" data-di="0" data-si="0"><div class="tooltip-time">7:00 AM – 7:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="0"><div class="tooltip" data-di="1" data-si="0"><div class="tooltip-time">7:00 AM – 7:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="2" data-si="0"><div class="tooltip" data-di="2" data-si="0"><div class="tooltip-time">7:00 AM – 7:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="3" data-si="0"><div class="tooltip" data-di="3" data-si="0"><div class="tooltip-time">7:00 AM – 7:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="0"><div class="tooltip" data-di="4" data-si="0"><div class="tooltip-time">7:00 AM – 7:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="5" data-si="0"><div class="tooltip" data-di="5" data-si="0"><div class="tooltip-time">7:00 AM – 7:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="6" data-si="0"><div class="tooltip" data-di="6" data-si="0"><div class="tooltip-time">7:00 AM – 7:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="1"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="1"><div class="tooltip-time">7:30 AM – 8:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="1" data-si="1"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="1"><div class="tooltip-time">7:30 AM – 8:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="2" data-si="1"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="1"><div class="tooltip-time">7:30 AM – 8:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="3" data-si="1"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="1"><div class="tooltip-time">7:30 AM – 8:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="4" data-si="1"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="1"><div class="tooltip-time">7:30 AM – 8:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="5" data-si="1"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="1"><div class="tooltip-time">7:30 AM – 8:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="6" data-si="1"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="1"><div class="tooltip-time">7:30 AM – 8:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl hour">8:00 AM</div><div class="slot hour" data-di="0" data-si="2"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="2"><div class="tooltip-time">8:00 AM – 8:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="1" data-si="2"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="2"><div class="tooltip-time">8:00 AM – 8:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="2" data-si="2"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="2"><div class="tooltip-time">8:00 AM – 8:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="3" data-si="2"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="2"><div class="tooltip-time">8:00 AM – 8:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="4" data-si="2"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="2"><div class="tooltip-time">8:00 AM – 8:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="5" data-si="2"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="2"><div class="tooltip-time">8:00 AM – 8:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="6" data-si="2"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="2"><div class="tooltip-time">8:00 AM – 8:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="3"><div class="tooltip" data-di="0" data-si="3"><div class="tooltip-time">8:30 AM – 9:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="3"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="3"><div class="tooltip-time">8:30 AM – 9:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="2" data-si="3"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="3"><div class="tooltip-time">8:30 AM – 9:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="3" data-si="3"><div class="tooltip" data-di="3" data-si="3"><div class="tooltip-time">8:30 AM – 9:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="3"><div class="tooltip" data-di="4" data-si="3"><div class="tooltip-time">8:30 AM – 9:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="5" data-si="3"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="3"><div class="tooltip-time">8:30 AM – 9:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="6" data-si="3"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="3"><div class="tooltip-time">8:30 AM – 9:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl hour">9:00 AM</div><div class="slot hour" data-di="0" data-si="4"><div class="tooltip" data-di="0" data-si="4"><div class="tooltip-time">9:00 AM – 9:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="4"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="4"><div class="tooltip-time">9:00 AM – 9:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="2" data-si="4"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="4"><div class="tooltip-time">9:00 AM – 9:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="3" data-si="4"><div class="tooltip" data-di="3" data-si="4"><div class="tooltip-time">9:00 AM – 9:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="4"><div class="tooltip" data-di="4" data-si="4"><div class="tooltip-time">9:00 AM – 9:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="5" data-si="4"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="4"><div class="tooltip-time">9:00 AM – 9:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="6" data-si="4"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="4"><div class="tooltip-time">9:00 AM – 9:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="5"><div class="tooltip" data-di="0" data-si="5"><div class="tooltip-time">9:30 AM – 10:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="5"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="5"><div class="tooltip-time">9:30 AM – 10:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="2" data-si="5"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="5"><div class="tooltip-time">9:30 AM – 10:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="3" data-si="5"><div class="tooltip" data-di="3" data-si="5"><div class="tooltip-time">9:30 AM – 10:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="5"><div class="tooltip" data-di="4" data-si="5"><div class="tooltip-time">9:30 AM – 10:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="5" data-si="5"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="5"><div class="tooltip-time">9:30 AM – 10:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="6" data-si="5"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="5"><div class="tooltip-time">9:30 AM – 10:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl hour">10:00 AM</div><div class="slot hour" data-di="0" data-si="6"><div class="tooltip" data-di="0" data-si="6"><div class="tooltip-time">10:00 AM – 10:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="6"><div class="tooltip" data-di="1" data-si="6"><div class="tooltip-time">10:00 AM – 10:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="2" data-si="6"><div class="tooltip" data-di="2" data-si="6"><div class="tooltip-time">10:00 AM – 10:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="3" data-si="6"><div class="tooltip" data-di="3" data-si="6"><div class="tooltip-time">10:00 AM – 10:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="6"><div class="tooltip" data-di="4" data-si="6"><div class="tooltip-time">10:00 AM – 10:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="5" data-si="6"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(237, 233, 254); border-color: rgb(124, 58, 237); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="6"><div class="tooltip-time">10:00 AM – 10:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#7C3AED"></span>Salvador Espinoza</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(124, 58, 237);"></div></div></div><div class="slot hour" data-di="6" data-si="6"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="6"><div class="tooltip-time">10:00 AM – 10:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="7"><div class="tooltip" data-di="0" data-si="7"><div class="tooltip-time">10:30 AM – 11:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="7"><div class="tooltip" data-di="1" data-si="7"><div class="tooltip-time">10:30 AM – 11:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="2" data-si="7"><div class="tooltip" data-di="2" data-si="7"><div class="tooltip-time">10:30 AM – 11:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="3" data-si="7"><div class="tooltip" data-di="3" data-si="7"><div class="tooltip-time">10:30 AM – 11:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="7"><div class="tooltip" data-di="4" data-si="7"><div class="tooltip-time">10:30 AM – 11:00 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="5" data-si="7"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(237, 233, 254); border-color: rgb(124, 58, 237); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="7"><div class="tooltip-time">10:30 AM – 11:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#7C3AED"></span>Salvador Espinoza</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(124, 58, 237);"></div></div></div><div class="slot half" data-di="6" data-si="7"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="7"><div class="tooltip-time">10:30 AM – 11:00 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl hour">11:00 AM</div><div class="slot hour" data-di="0" data-si="8"><div class="tooltip" data-di="0" data-si="8"><div class="tooltip-time">11:00 AM – 11:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="8"><div class="tooltip" data-di="1" data-si="8"><div class="tooltip-time">11:00 AM – 11:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="2" data-si="8"><div class="tooltip" data-di="2" data-si="8"><div class="tooltip-time">11:00 AM – 11:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="3" data-si="8"><div class="tooltip" data-di="3" data-si="8"><div class="tooltip-time">11:00 AM – 11:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="8"><div class="tooltip" data-di="4" data-si="8"><div class="tooltip-time">11:00 AM – 11:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="5" data-si="8"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(237, 233, 254); border-color: rgb(124, 58, 237); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="8"><div class="tooltip-time">11:00 AM – 11:30 AM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#7C3AED"></span>Salvador Espinoza</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(124, 58, 237);"></div></div></div><div class="slot hour" data-di="6" data-si="8"><div class="tooltip" data-di="6" data-si="8"><div class="tooltip-time">11:00 AM – 11:30 AM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="9"><div class="tooltip" data-di="0" data-si="9"><div class="tooltip-time">11:30 AM – 12:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="9"><div class="tooltip" data-di="1" data-si="9"><div class="tooltip-time">11:30 AM – 12:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="2" data-si="9"><div class="tooltip" data-di="2" data-si="9"><div class="tooltip-time">11:30 AM – 12:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="3" data-si="9"><div class="tooltip" data-di="3" data-si="9"><div class="tooltip-time">11:30 AM – 12:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="9"><div class="tooltip" data-di="4" data-si="9"><div class="tooltip-time">11:30 AM – 12:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="5" data-si="9"><div class="tooltip" data-di="5" data-si="9"><div class="tooltip-time">11:30 AM – 12:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="6" data-si="9"><div class="tooltip" data-di="6" data-si="9"><div class="tooltip-time">11:30 AM – 12:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="time-lbl hour">12:00 PM</div><div class="slot hour" data-di="0" data-si="10"><div class="tooltip" data-di="0" data-si="10"><div class="tooltip-time">12:00 PM – 12:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="10"><div class="tooltip" data-di="1" data-si="10"><div class="tooltip-time">12:00 PM – 12:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="2" data-si="10"><div class="tooltip" data-di="2" data-si="10"><div class="tooltip-time">12:00 PM – 12:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="3" data-si="10"><div class="tooltip" data-di="3" data-si="10"><div class="tooltip-time">12:00 PM – 12:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="10"><div class="tooltip" data-di="4" data-si="10"><div class="tooltip-time">12:00 PM – 12:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="5" data-si="10"><div class="tooltip" data-di="5" data-si="10"><div class="tooltip-time">12:00 PM – 12:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="6" data-si="10"><div class="tooltip" data-di="6" data-si="10"><div class="tooltip-time">12:00 PM – 12:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="11"><div class="tooltip" data-di="0" data-si="11"><div class="tooltip-time">12:30 PM – 1:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="11"><div class="tooltip" data-di="1" data-si="11"><div class="tooltip-time">12:30 PM – 1:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="2" data-si="11"><div class="tooltip" data-di="2" data-si="11"><div class="tooltip-time">12:30 PM – 1:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="3" data-si="11"><div class="tooltip" data-di="3" data-si="11"><div class="tooltip-time">12:30 PM – 1:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="11"><div class="tooltip" data-di="4" data-si="11"><div class="tooltip-time">12:30 PM – 1:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="5" data-si="11"><div class="tooltip" data-di="5" data-si="11"><div class="tooltip-time">12:30 PM – 1:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="6" data-si="11"><div class="tooltip" data-di="6" data-si="11"><div class="tooltip-time">12:30 PM – 1:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="time-lbl hour">1:00 PM</div><div class="slot hour" data-di="0" data-si="12"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="12"><div class="tooltip-time">1:00 PM – 1:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="1" data-si="12"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="12"><div class="tooltip-time">1:00 PM – 1:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="2" data-si="12"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="12"><div class="tooltip-time">1:00 PM – 1:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="3" data-si="12"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="12"><div class="tooltip-time">1:00 PM – 1:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div></div></div><div class="slot hour" data-di="4" data-si="12"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="12"><div class="tooltip-time">1:00 PM – 1:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div></div></div><div class="slot hour" data-di="5" data-si="12"><div class="tooltip" data-di="5" data-si="12"><div class="tooltip-time">1:00 PM – 1:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="6" data-si="12"><div class="tooltip" data-di="6" data-si="12"><div class="tooltip-time">1:00 PM – 1:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="13"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="13"><div class="tooltip-time">1:30 PM – 2:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="1" data-si="13"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="13"><div class="tooltip-time">1:30 PM – 2:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="2" data-si="13"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="13"><div class="tooltip-time">1:30 PM – 2:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="3" data-si="13"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="13"><div class="tooltip-time">1:30 PM – 2:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div></div></div><div class="slot half" data-di="4" data-si="13"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="13"><div class="tooltip-time">1:30 PM – 2:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div></div></div><div class="slot half" data-di="5" data-si="13"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="13"><div class="tooltip-time">1:30 PM – 2:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="6" data-si="13"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="13"><div class="tooltip-time">1:30 PM – 2:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl hour">2:00 PM</div><div class="slot hour" data-di="0" data-si="14"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="14"><div class="tooltip-time">2:00 PM – 2:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="1" data-si="14"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="14"><div class="tooltip-time">2:00 PM – 2:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="2" data-si="14"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="14"><div class="tooltip-time">2:00 PM – 2:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="3" data-si="14"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="14"><div class="tooltip-time">2:00 PM – 2:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="4" data-si="14"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="14"><div class="tooltip-time">2:00 PM – 2:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="5" data-si="14"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="14"><div class="tooltip-time">2:00 PM – 2:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="6" data-si="14"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="14"><div class="tooltip-time">2:00 PM – 2:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="15"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="15"><div class="tooltip-time">2:30 PM – 3:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="1" data-si="15"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="15"><div class="tooltip-time">2:30 PM – 3:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="2" data-si="15"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="15"><div class="tooltip-time">2:30 PM – 3:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="3" data-si="15"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="15"><div class="tooltip-time">2:30 PM – 3:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="4" data-si="15"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="15"><div class="tooltip-time">2:30 PM – 3:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="5" data-si="15"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="15"><div class="tooltip-time">2:30 PM – 3:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="6" data-si="15"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="15"><div class="tooltip-time">2:30 PM – 3:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl hour">3:00 PM</div><div class="slot hour" data-di="0" data-si="16"><div class="tooltip" data-di="0" data-si="16"><div class="tooltip-time">3:00 PM – 3:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="16"><div class="tooltip" data-di="1" data-si="16"><div class="tooltip-time">3:00 PM – 3:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="2" data-si="16"><div class="tooltip" data-di="2" data-si="16"><div class="tooltip-time">3:00 PM – 3:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="3" data-si="16"><div class="tooltip" data-di="3" data-si="16"><div class="tooltip-time">3:00 PM – 3:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="16"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="16"><div class="tooltip-time">3:00 PM – 3:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="5" data-si="16"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="16"><div class="tooltip-time">3:00 PM – 3:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="6" data-si="16"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="16"><div class="tooltip-time">3:00 PM – 3:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="17"><div class="tooltip" data-di="0" data-si="17"><div class="tooltip-time">3:30 PM – 4:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="17"><div class="tooltip" data-di="1" data-si="17"><div class="tooltip-time">3:30 PM – 4:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="2" data-si="17"><div class="tooltip" data-di="2" data-si="17"><div class="tooltip-time">3:30 PM – 4:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="3" data-si="17"><div class="tooltip" data-di="3" data-si="17"><div class="tooltip-time">3:30 PM – 4:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="17"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="17"><div class="tooltip-time">3:30 PM – 4:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="5" data-si="17"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="17"><div class="tooltip-time">3:30 PM – 4:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="6" data-si="17"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="17"><div class="tooltip-time">3:30 PM – 4:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl hour">4:00 PM</div><div class="slot hour" data-di="0" data-si="18"><div class="tooltip" data-di="0" data-si="18"><div class="tooltip-time">4:00 PM – 4:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="18"><div class="tooltip" data-di="1" data-si="18"><div class="tooltip-time">4:00 PM – 4:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="2" data-si="18"><div class="tooltip" data-di="2" data-si="18"><div class="tooltip-time">4:00 PM – 4:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="3" data-si="18"><div class="tooltip" data-di="3" data-si="18"><div class="tooltip-time">4:00 PM – 4:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="18"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="18"><div class="tooltip-time">4:00 PM – 4:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="5" data-si="18"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="18"><div class="tooltip-time">4:00 PM – 4:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="6" data-si="18"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="18"><div class="tooltip-time">4:00 PM – 4:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="19"><div class="tooltip" data-di="0" data-si="19"><div class="tooltip-time">4:30 PM – 5:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="19"><div class="tooltip" data-di="1" data-si="19"><div class="tooltip-time">4:30 PM – 5:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="2" data-si="19"><div class="tooltip" data-di="2" data-si="19"><div class="tooltip-time">4:30 PM – 5:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="3" data-si="19"><div class="tooltip" data-di="3" data-si="19"><div class="tooltip-time">4:30 PM – 5:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="19"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="19"><div class="tooltip-time">4:30 PM – 5:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="5" data-si="19"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="19"><div class="tooltip-time">4:30 PM – 5:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="6" data-si="19"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="19"><div class="tooltip-time">4:30 PM – 5:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="time-lbl hour">5:00 PM</div><div class="slot hour" data-di="0" data-si="20"><div class="tooltip" data-di="0" data-si="20"><div class="tooltip-time">5:00 PM – 5:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="1" data-si="20"><div class="tooltip" data-di="1" data-si="20"><div class="tooltip-time">5:00 PM – 5:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="2" data-si="20"><div class="tooltip" data-di="2" data-si="20"><div class="tooltip-time">5:00 PM – 5:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="3" data-si="20"><div class="tooltip" data-di="3" data-si="20"><div class="tooltip-time">5:00 PM – 5:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="4" data-si="20"><div class="tooltip" data-di="4" data-si="20"><div class="tooltip-time">5:00 PM – 5:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="5" data-si="20"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="20"><div class="tooltip-time">5:00 PM – 5:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div></div></div><div class="slot hour" data-di="6" data-si="20"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="20"><div class="tooltip-time">5:00 PM – 5:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="21"><div class="tooltip" data-di="0" data-si="21"><div class="tooltip-time">5:30 PM – 6:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="1" data-si="21"><div class="tooltip" data-di="1" data-si="21"><div class="tooltip-time">5:30 PM – 6:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="2" data-si="21"><div class="tooltip" data-di="2" data-si="21"><div class="tooltip-time">5:30 PM – 6:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="3" data-si="21"><div class="tooltip" data-di="3" data-si="21"><div class="tooltip-time">5:30 PM – 6:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="4" data-si="21"><div class="tooltip" data-di="4" data-si="21"><div class="tooltip-time">5:30 PM – 6:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="5" data-si="21"><div class="tooltip" data-di="5" data-si="21"><div class="tooltip-time">5:30 PM – 6:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot half" data-di="6" data-si="21"><div class="tooltip" data-di="6" data-si="21"><div class="tooltip-time">5:30 PM – 6:00 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="time-lbl hour">6:00 PM</div><div class="slot hour" data-di="0" data-si="22"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="22"><div class="tooltip-time">6:00 PM – 6:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div></div></div><div class="slot hour" data-di="1" data-si="22"><div class="slot-fill" style="left: 0%; width: 33.3333%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 33.3333%; width: 33.3333%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 66.6667%; width: 33.3333%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="22"><div class="tooltip-time">6:00 PM – 6:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div></div></div><div class="slot hour" data-di="2" data-si="22"><div class="slot-fill" style="left: 0%; width: 33.3333%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 33.3333%; width: 33.3333%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 66.6667%; width: 33.3333%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="22"><div class="tooltip-time">6:00 PM – 6:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div></div></div><div class="slot hour" data-di="3" data-si="22"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="22"><div class="tooltip-time">6:00 PM – 6:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div></div></div><div class="slot hour" data-di="4" data-si="22"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="22"><div class="tooltip-time">6:00 PM – 6:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="5" data-si="22"><div class="tooltip" data-di="5" data-si="22"><div class="tooltip-time">6:00 PM – 6:30 PM</div><div class="tooltip-empty">No one yet — click to add yourself</div></div></div><div class="slot hour" data-di="6" data-si="22"><div class="slot-fill" style="left: 0%; width: 33.3333%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 33.3333%; width: 33.3333%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 66.6667%; width: 33.3333%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="22"><div class="tooltip-time">6:00 PM – 6:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="23"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="23"><div class="tooltip-time">6:30 PM – 7:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="1" data-si="23"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="23"><div class="tooltip-time">6:30 PM – 7:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="2" data-si="23"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="23"><div class="tooltip-time">6:30 PM – 7:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="3" data-si="23"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="23"><div class="tooltip-time">6:30 PM – 7:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="4" data-si="23"><div class="slot-fill" style="left: 0%; width: 33.3333%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 33.3333%; width: 33.3333%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 66.6667%; width: 33.3333%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="23"><div class="tooltip-time">6:30 PM – 7:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="5" data-si="23"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="23"><div class="tooltip-time">6:30 PM – 7:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="6" data-si="23"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="23"><div class="tooltip-time">6:30 PM – 7:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl hour">7:00 PM</div><div class="slot hour" data-di="0" data-si="24"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="24"><div class="tooltip-time">7:00 PM – 7:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="1" data-si="24"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="24"><div class="tooltip-time">7:00 PM – 7:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="2" data-si="24"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="24"><div class="tooltip-time">7:00 PM – 7:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="3" data-si="24"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="24"><div class="tooltip-time">7:00 PM – 7:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot hour" data-di="4" data-si="24"><div class="slot-fill" style="left: 0%; width: 33.3333%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 33.3333%; width: 33.3333%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 66.6667%; width: 33.3333%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="24"><div class="tooltip-time">7:00 PM – 7:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="5" data-si="24"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="24"><div class="tooltip-time">7:00 PM – 7:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot hour" data-di="6" data-si="24"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="24"><div class="tooltip-time">7:00 PM – 7:30 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl half">·30</div><div class="slot half" data-di="0" data-si="25"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="0" data-si="25"><div class="tooltip-time">7:30 PM – 8:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="1" data-si="25"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="1" data-si="25"><div class="tooltip-time">7:30 PM – 8:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="2" data-si="25"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="2" data-si="25"><div class="tooltip-time">7:30 PM – 8:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="3" data-si="25"><div class="slot-fill" style="left: 0%; width: 50%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 50%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="tooltip" data-di="3" data-si="25"><div class="tooltip-time">7:30 PM – 8:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div></div></div><div class="slot half" data-di="4" data-si="25"><div class="slot-fill" style="left: 0%; width: 33.3333%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 33.3333%; width: 33.3333%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 66.6667%; width: 33.3333%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="4" data-si="25"><div class="tooltip-time">7:30 PM – 8:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="5" data-si="25"><div class="slot-fill" style="left: 0%; width: 100%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="5" data-si="25"><div class="tooltip-time">7:30 PM – 8:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="slot half" data-di="6" data-si="25"><div class="slot-fill" style="left: 0%; width: 25%; background: rgb(254, 243, 199); border-color: rgb(217, 119, 6); opacity: 0.8;"></div><div class="slot-fill" style="left: 25%; width: 25%; background: rgb(220, 252, 231); border-color: rgb(22, 163, 74); opacity: 0.8;"></div><div class="slot-fill" style="left: 50%; width: 25%; background: rgb(219, 234, 254); border-color: rgb(37, 99, 235); opacity: 0.8;"></div><div class="slot-fill" style="left: 75%; width: 25%; background: rgb(254, 226, 226); border-color: rgb(220, 38, 38); opacity: 0.8;"></div><div class="tooltip" data-di="6" data-si="25"><div class="tooltip-time">7:30 PM – 8:00 PM</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#D97706"></span>Ham</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#16A34A"></span>Herb</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#2563EB"></span>Kat Thongnoppakun</div><div class="tooltip-user"><span class="tooltip-dot" style="background:#DC2626"></span>Michael Lim muddafuk</div></div><div class="slot-dots"><div class="slot-dot-small" style="background: rgb(217, 119, 6);"></div><div class="slot-dot-small" style="background: rgb(22, 163, 74);"></div><div class="slot-dot-small" style="background: rgb(37, 99, 235);"></div><div class="slot-dot-small" style="background: rgb(220, 38, 38);"></div></div></div><div class="time-lbl hour">8:00 PM</div><div style="height: 0px; border-left: 1px solid var(--gray-100);"></div><div style="height: 0px; border-left: 1px solid var(--gray-100);"></div><div style="height: 0px; border-left: 1px solid var(--gray-100);"></div><div style="height: 0px; border-left: 1px solid var(--gray-100);"></div><div style="height: 0px; border-left: 1px solid var(--gray-100);"></div><div style="height: 0px; border-left: 1px solid var(--gray-100);"></div><div style="height: 0px; border-left: 1px solid var(--gray-100);"></div></div>
+    <div id="empty-hint" style="display:none">
+      <div class="big">📅</div>
+      <p>Click any time slot above to mark when you're available</p>
+    </div>
+  </div>
+
+  <!-- Overlap summary -->
+  <div id="summary" style="display: block;">
+    <div id="summary-inner">
+      <div id="summary-title">Full-group overlap</div>
+      <div id="summary-chips"><div class="sum-chip"><span class="day">Mon</span><span class="times">No overlap</span></div><div class="sum-chip"><span class="day">Tue</span><span class="times">No overlap</span></div><div class="sum-chip"><span class="day">Wed</span><span class="times">No overlap</span></div><div class="sum-chip"><span class="day">Thu</span><span class="times">No overlap</span></div><div class="sum-chip"><span class="day">Fri</span><span class="times">No overlap</span></div><div class="sum-chip"><span class="day">Sat</span><span class="times">No overlap</span></div><div class="sum-chip"><span class="day">Sun</span><span class="times">No overlap</span></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="./Ohm Scheduling Planner GitHub_files/firebase-app-compat.js"></script>
+<script src="./Ohm Scheduling Planner GitHub_files/firebase-database-compat.js"></script>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────
+const DAYS      = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const DAY_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+const SLOTS = [];
+for (let h = 7; h < 20; h++) { SLOTS.push({h, m:0}); SLOTS.push({h, m:30}); }
+const END = {h:20, m:0};
+
+const COLORS = [
+  { dot:"#16A34A", bg:"#DCFCE7", border:"#16A34A" }, // green
+  { dot:"#2563EB", bg:"#DBEAFE", border:"#2563EB" }, // blue
+  { dot:"#D97706", bg:"#FEF3C7", border:"#D97706" }, // amber
+  { dot:"#DC2626", bg:"#FEE2E2", border:"#DC2626" }, // red
+  { dot:"#7C3AED", bg:"#EDE9FE", border:"#7C3AED" }, // violet
+];
+
+function fmt(h, m) {
+  const ap = h >= 12 ? "PM" : "AM";
+  const hh = h > 12 ? h-12 : h === 0 ? 12 : h;
+  return `${hh}:${m===0?"00":"30"} ${ap}`;
+}
+
+// ── State ──────────────────────────────────────────────────────
+let db, dbRef;
+let currentUser = null;
+let liveData = { users:{}, selections:{} };
+
+// ── Firebase ───────────────────────────────────────────────────
+function boot() {
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.database();
+    dbRef = db.ref("ohm");
+    dbRef.on("value", snap => {
+      const val = snap.val() || {};
+      liveData = { users: val.users||{}, selections: val.selections||{} };
+      renderAll();
+      setStatus("live");
+    }, err => setStatus("error", err.message));
+    hideOverlay();
+  } catch(e) {
+    setStatus("error", e.message);
+    hideOverlay();
+  }
+}
+
+function hideOverlay() { document.getElementById("overlay").classList.add("hidden"); }
+
+function setStatus(state, msg) {
+  const pill = document.getElementById("status-pill");
+  const txt  = document.getElementById("status-text");
+  pill.className = state;
+  txt.textContent = state === "live" ? "Live" : state === "error" ? "Error" : "Connecting";
+}
+
+// ── Login ──────────────────────────────────────────────────────
+document.getElementById("login-btn").onclick = doLogin;
+document.getElementById("name-input").onkeydown = e => { if(e.key==="Enter") doLogin(); };
+document.getElementById("logout-btn").onclick  = doLogout;
+document.getElementById("clear-btn").onclick   = () => { if(currentUser) dbRef.child("selections").child(currentUser).remove(); };
+
+function doLogin() {
+  const name = document.getElementById("name-input").value.trim();
+  const errEl = document.getElementById("login-error");
+  errEl.textContent = "";
+  if (!name) { errEl.textContent = "Please enter your name."; return; }
+  if (name.length > 20) { errEl.textContent = "Name must be 20 characters or less."; return; }
+
+  const used = Object.values(liveData.users);
+  if (!liveData.users[name]) {
+    const avail = [0,1,2,3,4].filter(i => !used.includes(i));
+    if (!avail.length) { errEl.textContent = "5 people have already joined — the planner is full."; return; }
+    dbRef.child("users").child(name).set(avail[0]);
+  }
+  currentUser = name;
+  showScheduler();
+  renderAll();
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("scheduler").style.display = "none";
+  document.getElementById("name-input").value = "";
+  renderLoginPresence();
+}
+
+function showScheduler() {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("scheduler").style.display = "flex";
+  document.getElementById("scheduler").style.flexDirection = "column";
+}
+
+// ── Grid (built once) ──────────────────────────────────────────
+let gridBuilt = false;
+function buildGrid() {
+  if (gridBuilt) return;
+  gridBuilt = true;
+  const g = document.getElementById("grid");
+  g.innerHTML = "";
+
+  // Corner + headers
+  const corner = div("corner"); g.appendChild(corner);
+  DAY_SHORT.forEach((s, di) => {
+    const hdr = div("day-hdr");
+    hdr.innerHTML = `<div class="day-short">${s}</div><div class="day-long">${DAYS[di]}</div>`;
+    g.appendChild(hdr);
+  });
+
+  // Rows
+  SLOTS.forEach((slot, si) => {
+    const isHour = slot.m === 0;
+    const lbl = div("time-lbl " + (isHour ? "hour" : "half"));
+    lbl.textContent = isHour ? fmt(slot.h, 0) : "·30";
+    g.appendChild(lbl);
+
+    DAYS.forEach((_, di) => {
+      const cell = div("slot " + (isHour ? "hour" : "half"));
+      cell.dataset.di = di; cell.dataset.si = si;
+      const tip = div("tooltip");
+      tip.dataset.di = di; tip.dataset.si = si;
+      cell.appendChild(tip);
+      cell.addEventListener("mousedown", onMouseDown);
+      cell.addEventListener("mouseenter", onMouseEnter);
+      g.appendChild(cell);
+    });
+  });
+
+  // Final time row
+  const endLbl = div("time-lbl hour");
+  endLbl.textContent = fmt(END.h, END.m);
+  g.appendChild(endLbl);
+  DAYS.forEach(() => {
+    const e = div(""); e.style.cssText="height:0;border-left:1px solid var(--gray-100);";
+    g.appendChild(e);
+  });
+}
+
+function div(cls) {
+  const el = document.createElement("div");
+  if (cls) el.className = cls;
+  return el;
+}
+
+// ── Drag ──────────────────────────────────────────────────────
+let dragging = false, dragMode = null;
+window.addEventListener("mouseup", () => { dragging = false; dragMode = null; });
+
+function onMouseDown() {
+  if (!currentUser) return;
+  const {di, si} = this.dataset;
+  const key = `${di}_${si}`;
+  const on = liveData.selections[currentUser]?.[key];
+  dragMode = on ? "remove" : "add";
+  dragging = true;
+  applyDrag(+di, +si);
+}
+function onMouseEnter() {
+  if (!dragging || !currentUser) return;
+  applyDrag(+this.dataset.di, +this.dataset.si);
+}
+function applyDrag(di, si) {
+  const key = `${di}_${si}`;
+  const on = liveData.selections[currentUser]?.[key];
+  if (dragMode==="add" && on) return;
+  if (dragMode==="remove" && !on) return;
+  const ref = dbRef.child("selections").child(currentUser).child(key);
+  if (dragMode === "add") ref.set(true); else ref.remove();
+}
+
+// ── Render ────────────────────────────────────────────────────
+function renderAll() {
+  buildGrid();
+  renderLoginPresence();
+  if (currentUser) renderTopbar();
+  renderLegend();
+  renderSlots();
+  renderSummary();
+}
+
+function renderLoginPresence() {
+  const users = Object.entries(liveData.users);
+  const joined = document.getElementById("who-joined");
+  const chips  = document.getElementById("who-chips");
+  const spots  = document.getElementById("spots-left");
+
+  if (users.length > 0) {
+    joined.style.display = "block";
+    chips.innerHTML = "";
+    users.forEach(([name, ci]) => {
+      const col = COLORS[ci]||COLORS[0];
+      const chip = div("who-chip");
+      chip.style.background = col.bg;
+      chip.style.color = col.dot;
+      chip.style.cursor = "pointer";
+      chip.style.outline = `1.5px solid transparent`;
+      chip.style.transition = "transform 0.1s, outline-color 0.15s";
+      chip.title = `Click to join as ${name}`;
+      chip.innerHTML = `<span class="who-dot" style="background:${col.dot}"></span>${name}`;
+      chip.onmouseenter = () => { chip.style.outlineColor = col.dot; chip.style.transform = "scale(1.05)"; };
+      chip.onmouseleave = () => { chip.style.outlineColor = "transparent"; chip.style.transform = ""; };
+      chip.onclick = () => { currentUser = name; showScheduler(); renderAll(); };
+      chips.appendChild(chip);
+    });
+  } else {
+    joined.style.display = "none";
+  }
+  const rem = 5 - users.length;
+  spots.textContent = rem > 0 ? `${rem} spot${rem!==1?"s":""} remaining` : "Planner is full";
+}
+
+function renderTopbar() {
+  const ci = liveData.users[currentUser];
+  const col = COLORS[ci]||COLORS[0];
+  document.getElementById("user-badge-dot").style.background = col.dot;
+  document.getElementById("user-badge-name").textContent = currentUser;
+
+  const pres = document.getElementById("topbar-presence");
+  pres.innerHTML = "";
+  Object.entries(liveData.users).forEach(([name, ci]) => {
+    const col = COLORS[ci]||COLORS[0];
+    const count = Object.values(liveData.selections[name]||{}).filter(Boolean).length;
+    const chip = div("tp-chip");
+    if (name === currentUser) {
+      chip.style.background = col.bg;
+      chip.style.borderColor = col.dot;
+    } else {
+      chip.style.background = "transparent";
+      chip.style.borderColor = "var(--gray-200)";
+    }
+    chip.innerHTML = `<span class="tp-dot" style="background:${col.dot}"></span>
+      <span style="color:var(--gray-700)">${name}</span>
+      <span class="tp-count">${count}</span>`;
+    pres.appendChild(chip);
+  });
+}
+
+function renderLegend() {
+  const el = document.getElementById("legend-items");
+  el.innerHTML = "";
+  Object.entries(liveData.users).forEach(([name, ci]) => {
+    const col = COLORS[ci]||COLORS[0];
+    const item = div("legend-item");
+    item.innerHTML = `<span class="legend-dot" style="background:${col.dot}"></span>${name}`;
+    el.appendChild(item);
+  });
+}
+
+function renderSlots() {
+  document.querySelectorAll(".slot").forEach(cell => {
+    const di = +cell.dataset.di, si = +cell.dataset.si;
+    const key = `${di}_${si}`;
+    const slotUsers = Object.entries(liveData.users)
+      .map(([n,ci]) => ({n,ci}))
+      .filter(({n}) => liveData.selections[n]?.[key]);
+
+    cell.querySelectorAll(".slot-fill,.slot-dots").forEach(e=>e.remove());
+
+    // My selected state
+    const myOn = currentUser && liveData.selections[currentUser]?.[key];
+    cell.classList.toggle("mine-selected", !!myOn);
+
+    if (slotUsers.length > 0) {
+      const num = slotUsers.length;
+      slotUsers.forEach(({n, ci}, ui) => {
+        const col = COLORS[ci]||COLORS[0];
+        const fill = div("slot-fill");
+        fill.style.left  = `${(ui/num)*100}%`;
+        fill.style.width = `${(1/num)*100}%`;
+        fill.style.background  = col.bg;
+        fill.style.borderColor = col.dot;
+        fill.style.opacity = n===currentUser ? "1" : "0.8";
+        cell.insertBefore(fill, cell.querySelector(".tooltip"));
+      });
+
+      const dots = div("slot-dots");
+      slotUsers.forEach(({ci}) => {
+        const col = COLORS[ci]||COLORS[0];
+        const d = div("slot-dot-small");
+        d.style.background = col.dot;
+        dots.appendChild(d);
+      });
+      cell.appendChild(dots);
+    }
+
+    // Tooltip
+    const tip = cell.querySelector(".tooltip");
+    const slot = SLOTS[si], next = SLOTS[si+1]||END;
+    const timeStr = `${fmt(slot.h,slot.m)} – ${fmt(next.h,next.m)}`;
+    tip.innerHTML = `<div class="tooltip-time">${timeStr}</div>` +
+      (slotUsers.length
+        ? slotUsers.map(({n,ci})=>{
+            const col=COLORS[ci]||COLORS[0];
+            return `<div class="tooltip-user"><span class="tooltip-dot" style="background:${col.dot}"></span>${n}</div>`;
+          }).join("")
+        : `<div class="tooltip-empty">No one yet — click to add yourself</div>`);
+  });
+}
+
+function renderSummary() {
+  const users = Object.keys(liveData.users);
+  const sumEl = document.getElementById("summary");
+  if (users.length < 2) { sumEl.style.display = "none"; return; }
+  sumEl.style.display = "block";
+
+  const chips = document.getElementById("summary-chips");
+  chips.innerHTML = "";
+  DAY_SHORT.forEach((short, di) => {
+    const overlap = SLOTS
+      .map((slot,si) => ({slot,si}))
+      .filter(({si}) => {
+        const k = `${di}_${si}`;
+        return users.every(n => liveData.selections[n]?.[k]);
+      });
+    const chip = div("sum-chip" + (overlap.length ? " has-overlap" : ""));
+    const times = overlap.length
+      ? overlap.map(({slot}) => fmt(slot.h,slot.m)).join("  ·  ")
+      : "No overlap";
+    chip.innerHTML = `<span class="day">${short}</span><span class="times">${times}</span>`;
+    chips.appendChild(chip);
+  });
+}
+
+// ── Go ────────────────────────────────────────────────────────
+boot();
+</script>
+
+
+</body></html>
