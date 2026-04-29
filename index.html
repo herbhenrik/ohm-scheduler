@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0055)file:///Users/henrikherb/Downloads/ohm-scheduler_5.html -->
+<!-- saved from url=(0055)file:///Users/henrikherb/Downloads/ohm-scheduler_6.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -165,6 +165,8 @@ html, body {
   padding: 5px 12px;
   border-radius: 99px;
   font-size: 13px; font-weight: 500;
+  font-family: var(--font);
+  user-select: none;
 }
 .who-dot { width: 8px; height: 8px; border-radius: 50%; }
 .spots-left {
@@ -587,7 +589,7 @@ function setStatus(state, msg) {
 document.getElementById("login-btn").onclick = doLogin;
 document.getElementById("name-input").onkeydown = e => { if(e.key==="Enter") doLogin(); };
 document.getElementById("logout-btn").onclick  = doLogout;
-document.getElementById("clear-btn").onclick   = () => { if(currentUser) dbRef.child("selections").child(currentUser).remove(); };
+document.getElementById("clear-btn").onclick   = () => { if(currentUser && confirm("Clear all your selected slots?")) dbRef.child("selections").child(currentUser).remove(); };
 
 // Event delegation for name chips — reliable even after re-renders
 document.getElementById("who-chips").addEventListener("click", function(e) {
